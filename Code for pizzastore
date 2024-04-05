@@ -1,0 +1,244 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace PizzaStore
+{
+    // Pizza class
+    public class Pizza
+    {
+        // Properties
+        public string Name { get; set; }
+        public double Price { get; set; }
+        public List<string> Toppings { get; set; }
+
+        // Constructor
+        public Pizza(string name, double price, List<string> toppings)
+        {
+            Name = name;
+            Price = price;
+            Toppings = toppings;
+        }
+
+        // ToString 
+        public override string ToString()
+        {
+            return $"Pizza: {Name}, Price: {Price} kr";
+        }
+    }
+
+    // MenuCatalog class
+    public class MenuCatalog
+    {
+        private List<Pizza> pizzas;
+
+        public MenuCatalog()
+        {
+            pizzas = new List<Pizza>();
+        }
+
+        // CRUD 
+        public void AddPizza(Pizza pizza)
+        {
+            pizzas.Add(pizza);
+        }
+
+        public void DeletePizza(string pizzaName)
+        {
+            Pizza pizzaToDelete = pizzas.FirstOrDefault(p => p.Name == pizzaName);
+            if (pizzaToDelete != null)
+                pizzas.Remove(pizzaToDelete);
+        }
+
+        public void UpdatePizza(string pizzaName, Pizza updatedPizza)
+        {
+            DeletePizza(pizzaName);
+            AddPizza(updatedPizza);
+        }
+
+        public Pizza SearchPizza(string criteria)
+        {
+            return pizzas.FirstOrDefault(p => p.Name.ToLower() == criteria.ToLower());
+        }
+
+        public void PrintMenu()
+        {
+            foreach (var pizza in pizzas)
+            {
+                Console.WriteLine(pizza);
+            }
+        }
+    }
+
+    // Store class
+    public class Store
+    {
+        private MenuCatalog menuCatalog;
+        private List<string> menuItems;
+
+        public Store()
+        {
+            menuCatalog = new MenuCatalog();
+            menuItems = new List<string> {
+                "Add new pizza to the menu",
+                "Delete pizza from the menu",
+                "Update pizza from the menu",
+                "Search for a pizza",
+                "Display pizza menu",
+                "Exit"
+            };
+        }
+
+        public void Start()
+        {
+            bool exit = false;
+            while (!exit)
+            {
+                Console.Clear(); // Clear the console screen
+                int choice = MenuChoice(menuItems);
+                switch (choice)
+                {
+                    case 1:
+                        AddPizzaToMenu();
+                        break;
+                    case 2:
+                        DeletePizzaFromMenu();
+                        break;
+                    case 3:
+                        UpdatePizzaInMenu();
+                        break;
+                    case 4:
+                        SearchForPizza();
+                        break;
+                    case 5:
+                        DisplayPizzaMenu();
+                        break;
+                    case 6:
+                        exit = true;
+                        break;
+                }
+            }
+        }
+
+        public int MenuChoice(List<string> items)
+        {
+            int choice = 0;
+            bool validChoice = false;
+            while (!validChoice)
+            {
+                Console.WriteLine("\nMenu:");
+                for (int i = 0; i < items.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {items[i]}");
+                }
+                Console.Write("Enter your choice: ");
+                string input = Console.ReadLine();
+                if (int.TryParse(input, out choice) && choice >= 1 && choice <= items.Count)
+                {
+                    validChoice = true;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid choice. Please enter a number between 1 and " + items.Count);
+                }
+            }
+            return choice;
+        }
+
+        public void AddPizzaToMenu()
+        {
+            Console.WriteLine("\nAdding a new pizza to the menu:");
+            Console.Write("Enter pizza name: ");
+            string name = Console.ReadLine();
+            Console.Write("Enter pizza price: ");
+            double price;
+            while (!double.TryParse(Console.ReadLine(), out price) || price <= 0)
+            {
+                Console.WriteLine("Invalid price. Please enter a valid positive number.");
+                Console.Write("Enter pizza price: ");
+            }
+            Console.WriteLine("Enter toppings (comma separated): ");
+            List<string> toppings = Console.ReadLine().Split(',').Select(t => t.Trim()).ToList();
+            Pizza newPizza = new Pizza(name, price, toppings);
+            menuCatalog.AddPizza(newPizza);
+            Console.WriteLine("Pizza added to the menu successfully!");
+            Console.ReadLine(); // Wait for user input before clearing the console
+        }
+
+        public void DeletePizzaFromMenu()
+        {
+            Console.WriteLine("\nDeleting a pizza from the menu:");
+            Console.Write("Enter the name of the pizza to delete: ");
+            string pizzaName = Console.ReadLine();
+            menuCatalog.DeletePizza(pizzaName);
+            Console.WriteLine("Pizza deleted from the menu successfully!");
+            Console.ReadLine(); 
+        }
+
+        public void UpdatePizzaInMenu()
+        {
+            Console.WriteLine("\nUpdating a pizza from the menu:");
+            Console.Write("Enter the name of the pizza to update: ");
+            string pizzaName = Console.ReadLine();
+            Pizza existingPizza = menuCatalog.SearchPizza(pizzaName);
+            if (existingPizza != null)
+            {
+                Console.WriteLine("Enter new details for the pizza:");
+                Console.Write("New name: ");
+                string newName = Console.ReadLine();
+                Console.Write("New price: ");
+                double newPrice;
+                while (!double.TryParse(Console.ReadLine(), out newPrice) || newPrice <= 0)
+                {
+                    Console.WriteLine("Invalid price. Please enter a valid positive number.");
+                    Console.Write("New price: ");
+                }
+                Console.WriteLine("New toppings (comma separated): ");
+                List<string> newToppings = Console.ReadLine().Split(',').Select(t => t.Trim()).ToList();
+                Pizza updatedPizza = new Pizza(newName, newPrice, newToppings);
+                menuCatalog.UpdatePizza(pizzaName, updatedPizza);
+                Console.WriteLine("Pizza updated successfully!");
+            }
+            else
+            {
+                Console.WriteLine("Pizza not found in the menu!");
+            }
+            Console.ReadLine(); 
+        }
+
+        public void SearchForPizza()
+        {
+            Console.WriteLine("\nSearching for a pizza:");
+            Console.Write("Enter the name of the pizza to search for: ");
+            string pizzaName = Console.ReadLine();
+            Pizza foundPizza = menuCatalog.SearchPizza(pizzaName);
+            if (foundPizza != null)
+            {
+                Console.WriteLine("Pizza found in the menu:");
+                Console.WriteLine(foundPizza);
+            }
+            else
+            {
+                Console.WriteLine("Pizza not found in the menu!");
+            }
+            Console.ReadLine(); 
+        }
+
+        public void DisplayPizzaMenu()
+        {
+            Console.WriteLine("\nPizza Menu:");
+            menuCatalog.PrintMenu();
+            Console.ReadLine(); 
+        }
+    }
+
+    // Program class
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Store store = new Store();
+            store.Start();
+        }
+    }
+}
